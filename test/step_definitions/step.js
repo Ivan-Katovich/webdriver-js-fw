@@ -6,10 +6,7 @@ var steps = function() {
 
     this.When(/^I navigate to page$/, function () {
         var world = this;
-        return world.driver.sleep(5000)
-            .then(function () {
-                return world.driver.get(world.baseUrl);
-            })
+        return world.driver.get(world.baseUrl)
             .then(function () {
                 return world.driver.sleep(5000);
             })
@@ -19,13 +16,7 @@ var steps = function() {
         var world = this;
         console.log(process.cwd());
         console.log('Waiting for '+sec+' sec');
-        return world.driver.sleep(sec*1000)
-            .then(function () {
-                return world.driver.quit();
-            })
-            .then(function () {
-                return world.server.stop();
-            });
+        return world.driver.sleep(sec*1000);
     });
 
 
