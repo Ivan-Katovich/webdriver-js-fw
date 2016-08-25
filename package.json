@@ -1,0 +1,25 @@
+{
+  "name": "webdriver-js-fw",
+  "version": "0.0.0",
+  "description": "Test automation using webdriverjs+cucumber",
+  "devDependencies": {
+    "chromedriver": "^2.23.1",
+    "cucumber": "^0.10.2",
+    "geckodriver": "^1.1.2",
+    "gherkin": "^3.1.0",
+    "gulp": "^3.9.1",
+    "gulp-cucumber": "0.0.22",
+    "path": "^0.12.7",
+    "selenium-standalone": "^5.6.1",
+    "selenium-webdriver": "^3.0.0-beta-2"
+  },
+  "engines": {
+    "node": ">=4.4.5"
+  },
+  "author": "Ivan Katovich",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Ivan-Katovich/webdriver-js-fw.git"
+  },
+  "license": "BSD-2-Clause"
+}
