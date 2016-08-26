@@ -1,23 +1,18 @@
+'use strict';
+
+require('chromedriver');
+require('geckodriver'); //have to extract geckodriver.exe from zip file manually (node-geckodriver issue)
+require('phantomjs');
+
 var webdriver = require('selenium-webdriver'),
-    chrome = require('selenium-webdriver/chrome'),
-    firefox = require('selenium-webdriver/firefox'),
-
-    profile = new firefox.Profile();
-
-profile.setPreference('browser.startup.page',0);
-profile.setPreference('startup.homepage_welcome_url.additional','about:blank');
-profile.setPreference('marionette', true);
-
-var options = new firefox.Options().setProfile(profile);
+    capabilities = require('./../profile/capabilities.js');
 
 var instance = (function(){
     var driver;
     if(!driver){
         var server = require('./serverFactory.js');
         driver = new webdriver.Builder()
-        // .withCapabilities(capabilities)
-            .forBrowser('firefox')
-            .setFirefoxOptions(options)
+            .withCapabilities(capabilities[process.env.BROWSER])
             .usingServer(server.address())
             .build();
     }

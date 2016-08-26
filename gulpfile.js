@@ -1,6 +1,7 @@
 var gulp = require('gulp'),
     cucumber = require('gulp-cucumber'),
-    selenium = require('selenium-standalone');
+    selenium = require('selenium-standalone'),
+    util = require('gulp-util');
 
 gulp.task('selenium', function (done) {
     selenium.install({
@@ -33,11 +34,15 @@ gulp.task('selenium', function (done) {
 });
 
 gulp.task('cucumber'/*,['selenium']*/ , function() {
-    return gulp.src('test/features/*').pipe(cucumber({
-        'steps': 'test/step_definitions/*.js',
-        'support': 'test/support/*.js',
-        'format': 'pretty'
-    }));
+    util.env.browser ? process.env.BROWSER = util.env.browser : process.env.BROWSER = 'chrome';
+    util.env.view ? process.env.VIEW = util.env.view : process.env.VIEW = 'desktop';
+    console.log('\n Tests are raning on "'+process.env.BROWSER+'" browser\n');
+    return gulp.src('test/features/*')
+        .pipe(cucumber({
+            'steps': 'test/step_definitions/*.js',
+            'support': 'test/support/*.js',
+            'format': 'pretty'
+        }));
 });
 
 gulp.task('test', ['cucumber'], function () {

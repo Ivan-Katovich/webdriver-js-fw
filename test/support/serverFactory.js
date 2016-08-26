@@ -1,5 +1,8 @@
+'use strict';
+
 var SeleniumServer = require('selenium-webdriver/remote').SeleniumServer,
-    pathToSeleniumJar = process.cwd()+'\\selenium-server\\selenium-server-standalone-3.0.0-beta2.jar';
+    // pathToSeleniumJar = process.cwd()+'\\selenium-server\\selenium-server-standalone-3.0.0-beta2.jar';
+    pathToSeleniumJar = require('path').join(__dirname, '..', '..', 'selenium-server', 'selenium-server-standalone-3.0.0-beta2.jar');
 
 var instanse = (function(){
     var server;
