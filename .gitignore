@@ -28,3 +28,6 @@ node_modules
 
 # IDE
 .idea
+
+# Reports directory
+test/reports

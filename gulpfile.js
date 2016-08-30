@@ -14,13 +14,22 @@ var gulp = require('gulp'),
     chai = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
     server,
-    name = '';
+    name = '',
+    name2 = '';
 
-// gulp.task('test', function(){
-//     runSequence('onPrepare',
-//         'cucumber',
-//         'reportHtml');
-// });
+gulp.task('test', function(){
+    runSequence('server',
+        'onPrepare',
+        'cucumber',
+        'reportHtml');
+});
+
+gulp.task('parallel', function(){
+    runSequence('server',
+        'onPrepare',
+        ['cucumber','cucumber2'],
+        'reportHtml');
+});
 
 gulp.task('selenium', function (done) {
     selenium.install({
@@ -58,7 +67,7 @@ gulp.task('server', function(){
     return server.start();
 });
 
-gulp.task('onPrepare', ['server'], function(){
+gulp.task('onPrepare', function(){
     return fsp.emptyDir('test/reports/json')
         .then(function () {
             return fsp.emptyDir('test/reports/html');
@@ -69,7 +78,7 @@ gulp.task('onPrepare', ['server'], function(){
         });
 });
 
-gulp.task('cucumber', ['onPrepare'], function() {
+gulp.task('cucumber', function() {
     util.env.browser ? process.env.BROWSER = util.env.browser : process.env.BROWSER = 'chrome';
     util.env.view ? process.env.VIEW = util.env.view : process.env.VIEW = 'desktop';
     console.log('\n Tests are raning on "'+process.env.BROWSER+'" browser\n');
@@ -88,10 +97,29 @@ gulp.task('cucumber', ['onPrepare'], function() {
         }));
 });
 
-gulp.task('test', ['cucumber'], function () {
+gulp.task('cucumber2', function() {
+    util.env.browser ? process.env.BROWSER = util.env.browser : process.env.BROWSER = 'chrome';
+    util.env.view ? process.env.VIEW = util.env.view : process.env.VIEW = 'desktop';
+    console.log('\n Tests are raning on "'+process.env.BROWSER+'" browser\n');
+    console.log(' "'+process.env.VIEW+'" view has setup\n');
+    name2 += 'cucumber-report-id';
+    name2 += Math.floor((Math.random() * 900) + 100);
+    name2 += '(' + process.env.BROWSER;
+    name2 += '-' + process.env.VIEW;
+    name2 += ')';
+    return gulp.src('test/features/*')
+        .pipe(cucumber({
+            'steps': 'test/step_definitions/*.js',
+            'support': 'test/support/*.js',
+            'format': 'json:test/reports/json/json-'+name2+'.json',
+            'emitErrors': false
+        }));
+});
+
+gulp.task('reportHtml', function () {
     var options = {
         theme: 'bootstrap',
-        jsonFile: 'test/reports/json/json-'+name+'.json',
+        jsonFile: 'test/reports/json/*.json',
         output: 'test/reports/html/html'+name+'.html',
         reportSuiteAsScenarios: true,
         launchReport: false
