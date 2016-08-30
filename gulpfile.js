@@ -119,8 +119,8 @@ gulp.task('cucumber2', function() {
 gulp.task('reportHtml', function () {
     var options = {
         theme: 'bootstrap',
-        jsonFile: 'test/reports/json/*.json',
-        output: 'test/reports/html/html'+name+'.html',
+        jsonFile: 'test/reports/json/json-'+name+'.json',
+        output: 'test/reports/html/html-'+name+'.html',
         reportSuiteAsScenarios: true,
         launchReport: false
     };
