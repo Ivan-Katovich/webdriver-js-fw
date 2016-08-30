@@ -119,11 +119,19 @@ gulp.task('cucumber2', function() {
 gulp.task('reportHtml', function () {
     var options = {
         theme: 'bootstrap',
-        jsonFile: 'test/reports/json/*.json',
-        output: 'test/reports/html/html'+name+'.html',
+        jsonFile: 'test/reports/json/json-'+name+'.json',
+        output: 'test/reports/html/html-'+name+'.html',
+        reportSuiteAsScenarios: true,
+        launchReport: false
+    };
+    var options2 = {
+        theme: 'bootstrap',
+        jsonFile: 'test/reports/json/json-'+name2+'.json',
+        output: 'test/reports/html/html-'+name2+'.html',
         reportSuiteAsScenarios: true,
         launchReport: false
     };
     reporter.generate(options);
+    reporter.generate(options2);
     return server.stop();
 });

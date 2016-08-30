@@ -1,6 +1,7 @@
 'use strict';
 
 var firefoxView = require('./../profile/view.js').other,
+    driverThreed,
     isFirst = true;
 
 var hooks = function(){
@@ -28,6 +29,9 @@ var hooks = function(){
         return world.driver.sleep(3000)
             .then(function () {
                 return world.driver.executeScript('window.localStorage.clear();');
+            })
+            .then(function () {
+                return world.driver.quit();
             });
     });
 
