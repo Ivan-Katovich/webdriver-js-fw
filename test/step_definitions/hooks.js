@@ -1,8 +1,6 @@
 'use strict';
 
-var instance = require('./../support/driverFactory.js'),
-    server = require('./../support/serverFactory.js'),
-    firefoxView = require('./../profile/view.js').other,
+var firefoxView = require('./../profile/view.js').other,
     isFirst = true;
 
 var hooks = function(){
@@ -33,16 +31,17 @@ var hooks = function(){
             });
     });
 
-    this.registerHandler('AfterFeatures', function (event, callback) {
-        console.log('FINISHING running scenarios');
-        instance.quit()
-            .then(function () {
-                return server.stop();
-            })
-            .then(function () {
-                callback();
-            });
+    this.After(function (scenario) {
+        var world = this;
+        if(scenario.isFailed()){
+            return world.driver.takeScreenshot()
+                .then(function (stream) {
+                    var decodedImage = new Buffer(stream, 'base64');
+                    return scenario.attach(decodedImage, 'image/png');
+                });
+        }
     });
+
 };
 
 module.exports = hooks;

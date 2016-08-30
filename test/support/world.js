@@ -1,9 +1,9 @@
 'use strict';
 
-var instance = require('./driverFactory.js');
-
 function World() {
-    this.driver = instance;
+    this.driver = require('./driverFactory.js');
+    this.q = require('q');
+    this.moment = require('moment');
     this.baseUrl = 'http://www.travelsupermarket.com/';
 }
 
