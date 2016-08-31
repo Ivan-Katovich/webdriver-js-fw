@@ -46,7 +46,9 @@ gulp.task('cmd', function(){
         viewsStr = util.env.views ? util.env.views : 'desktop/desktop/desktop',
         promises = [],
         browsers = browsersStr.split('/'),
-        views = viewsStr.split('/');
+        views = viewsStr.split('/'),
+        browsersFinal = [],
+        viewsFinal = [];
 
     var f1 = function(browser,view){
         return exec('gulp cucumberWithReport --browser='+browser+' --view='+view)
@@ -59,18 +61,20 @@ gulp.task('cmd', function(){
     };
 
     for( var i = 0; i<threads; i++){
-        if(!browsers[i]){
+        if(browsers[i] !== 'firefox' && browsers[i] !== 'phantomjs'){
             browsers[i] = 'chrome';
         }
-        if(!views[i]){
+        browsersFinal.push(browsers[i]);
+        if(views[i] !== 'mobile' && views[i] !== 'tabletL' && views[i] !== 'tabletP'){
             views[i] = 'desktop';
         }
+        viewsFinal.push(views[i]);
         promises.push(f1(browsers[i],views[i]));
     }
 
     console.log('\nTests has run in '+threads+' threads, with: ');
-    console.log('browsers: '+browsers.toString());
-    console.log('views: '+views.toString()+'\n');
+    console.log('browsers: '+browsersFinal.toString());
+    console.log('views: '+viewsFinal.toString()+'\n');
 
     return q.all(promises);
 
