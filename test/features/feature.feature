@@ -1,5 +1,3 @@
-
-
 Feature: Test
   As a user
   I test webdriverJS api

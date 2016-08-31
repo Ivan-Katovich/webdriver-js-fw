@@ -4,8 +4,7 @@ var steps = function() {
 
     this.When(/^I say '(.+)'$/, function (say) {
         var world = this;
-        console.log(say);
-        return world.driver.sleep(9000);
+        return world.driver.sleep(3000);
     });
 
     this.Then(/^first number '(\d+)' equals to second number '(\d+)'$/, function (first,second) {

@@ -14,8 +14,6 @@ var steps = function() {
 
     this.When(/^I sleep for '(.+)' sec and quit driver$/, function (sec) {
         var world = this;
-        console.log(process.cwd());
-        console.log('Waiting for '+sec+' sec');
         return world.driver.sleep(sec*1000);
     });
 

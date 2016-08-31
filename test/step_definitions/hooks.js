@@ -8,27 +8,21 @@ var hooks = function(){
     this.Before(function () {
         var world = this;
         if(isFirst){
-            console.log('BEFORE first run');
             isFirst = false;
-            return world.driver.sleep(3000)
+            return world.driver.sleep(100)
                 .then(function () {
                     if(process.env.BROWSER === 'firefox' || process.env.BROWSER === 'phantomjs'){
                         return world.driver.manage().window().setSize(firefoxView[process.env.VIEW].width, firefoxView[process.env.VIEW].height);
                     }
                 });
         }else{
-            console.log('BEFORE other runs');
-            return world.driver.sleep(3000);
+            return world.driver.sleep(100);
         }
     });
 
     this.After(function () {
         var world = this;
-        console.log('AFTER');
-        return world.driver.sleep(3000)
-            .then(function () {
-                return world.driver.executeScript('window.localStorage.clear();');
-            });
+        return world.driver.executeScript('window.localStorage.clear();');
     });
 
     this.After(function (scenario) {

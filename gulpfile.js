@@ -10,55 +10,70 @@ var gulp = require('gulp'),
     SeleniumServer = require('selenium-webdriver/remote').SeleniumServer,
     reporter = require('cucumber-html-reporter'),
     fsp = require('fs-promise'),
+    q = require('q'),
     util = require('gulp-util'),
     chai = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
     server,
-    name = '',
-    name2 = '';
+    name = '';
+
+chai.use(chaiAsPromised);
+
+expect = chai.expect;
+
+var exec = require('child-process-promise').exec;
+
 
 gulp.task('test', function(){
     runSequence('server',
         'onPrepare',
         'cucumber',
-        'reportHtml');
+        'reportHtml',
+        'serverStop');
 });
 
 gulp.task('parallel', function(){
     runSequence('server',
         'onPrepare',
-        ['cucumber','cucumber2'],
-        'reportHtml');
+        'cmd',
+        'serverStop');
 });
 
-gulp.task('selenium', function (done) {
-    selenium.install({
-        version: '3.0.0-beta2',
-        baseURL: 'https://selenium-release.storage.googleapis.com',
-        // drivers: {
-        //     chrome: {
-        //         version: '2.23',
-        //         arch: process.arch,
-        //         baseURL: 'https://chromedriver.storage.googleapis.com'
-        //     },
-        //     firefox: {
-        //         version: '0.10.0',
-        //         arch: process.arch,
-        //         baseURL: 'https://github.com/mozilla/geckodriver/releases/download'
-        //     }
-        // },
-        logger: function (message) {
-            console.log('00000000000 '+message);
-        }
-    }, function (err) {
-        if (err) return done('111111111111 '+err);
+gulp.task('cmd', function(){
 
-        selenium.start(function (err, child) {
-            if (err) return done(err);
-            selenium.child = child;
-            done();
-        });
-    });
+    var threads = util.env.threads ? util.env.threads : 3,
+        browsersStr = util.env.browsers ? util.env.browsers : 'chrome/chrome/chrome',
+        viewsStr = util.env.views ? util.env.views : 'desktop/desktop/desktop',
+        promises = [],
+        browsers = browsersStr.split('/'),
+        views = viewsStr.split('/');
+
+    var f1 = function(browser,view){
+        return exec('gulp cucumberWithReport --browser='+browser+' --view='+view)
+            .then(function (results) {
+                console.log(results.stdout);
+            })
+            .catch(function (err) {
+                console.error('ERROR: ', err);
+            });
+    };
+
+    for( var i = 0; i<threads; i++){
+        if(!browsers[i]){
+            browsers[i] = 'chrome';
+        }
+        if(!views[i]){
+            views[i] = 'desktop';
+        }
+        promises.push(f1(browsers[i],views[i]));
+    }
+
+    console.log('\nTests has run in '+threads+' threads, with: ');
+    console.log('browsers: '+browsers.toString());
+    console.log('views: '+views.toString()+'\n');
+
+    return q.all(promises);
+
 });
 
 gulp.task('server', function(){
@@ -71,18 +86,13 @@ gulp.task('onPrepare', function(){
     return fsp.emptyDir('test/reports/json')
         .then(function () {
             return fsp.emptyDir('test/reports/html');
-        })
-        .then(function () {
-            chai.use(chaiAsPromised);
-            expect = chai.expect;
         });
 });
 
 gulp.task('cucumber', function() {
     util.env.browser ? process.env.BROWSER = util.env.browser : process.env.BROWSER = 'chrome';
     util.env.view ? process.env.VIEW = util.env.view : process.env.VIEW = 'desktop';
-    console.log('\n Tests are raning on "'+process.env.BROWSER+'" browser\n');
-    console.log(' "'+process.env.VIEW+'" view has setup\n');
+    console.log('\n Tests are raning on "'+process.env.BROWSER+'" browser, "'+process.env.VIEW+'" view has setup\n');
     name += 'cucumber-report-id';
     name += Math.floor((Math.random() * 900) + 100);
     name += '(' + process.env.BROWSER;
@@ -97,25 +107,6 @@ gulp.task('cucumber', function() {
         }));
 });
 
-gulp.task('cucumber2', function() {
-    util.env.browser ? process.env.BROWSER = util.env.browser : process.env.BROWSER = 'chrome';
-    util.env.view ? process.env.VIEW = util.env.view : process.env.VIEW = 'desktop';
-    console.log('\n Tests are raning on "'+process.env.BROWSER+'" browser\n');
-    console.log(' "'+process.env.VIEW+'" view has setup\n');
-    name2 += 'cucumber-report-id';
-    name2 += Math.floor((Math.random() * 900) + 100);
-    name2 += '(' + process.env.BROWSER;
-    name2 += '-' + process.env.VIEW;
-    name2 += ')';
-    return gulp.src('test/features/*')
-        .pipe(cucumber({
-            'steps': 'test/step_definitions/*.js',
-            'support': 'test/support/*.js',
-            'format': 'json:test/reports/json/json-'+name2+'.json',
-            'emitErrors': false
-        }));
-});
-
 gulp.task('reportHtml', function () {
     var options = {
         theme: 'bootstrap',
@@ -125,5 +116,19 @@ gulp.task('reportHtml', function () {
         launchReport: false
     };
     reporter.generate(options);
+});
+
+gulp.task('cucumberWithReport', ['cucumber'], function () {
+    var options = {
+        theme: 'bootstrap',
+        jsonFile: 'test/reports/json/json-'+name+'.json',
+        output: 'test/reports/html/html-'+name+'.html',
+        reportSuiteAsScenarios: true,
+        launchReport: false
+    };
+    return reporter.generate(options);
+});
+
+gulp.task('serverStop', function(){
     return server.stop();
 });
