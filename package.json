@@ -9,7 +9,6 @@
     "chromedriver": "^2.23.1",
     "cucumber": "^0.10.2",
     "cucumber-html-reporter": "^0.2.7",
-    "forEachAsync": "^3.0.0",
     "fs-promise": "^0.5.0",
     "geckodriver": "^1.1.2",
     "gherkin": "^3.1.0",

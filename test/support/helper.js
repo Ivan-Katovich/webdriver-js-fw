@@ -1,7 +1,6 @@
 'use strict';
 
 var glob = require('glob-promise'),
-    fea = require('forEachAsync'),
     q = require('q'),
     fsp = require('fs-promise');
 
