@@ -14,6 +14,7 @@ var gulp = require('gulp'),
     util = require('gulp-util'),
     chai = require('chai'),
     chaiAsPromised = require('chai-as-promised'),
+    helper = require('./test/support/helper.js'),
     server,
     name = '';
 
@@ -36,6 +37,8 @@ gulp.task('parallel', function(){
     runSequence('server',
         'onPrepare',
         'cmd',
+        'glueJsons',
+        'resultReportHtml',
         'serverStop');
 });
 
@@ -51,7 +54,7 @@ gulp.task('cmd', function(){
         viewsFinal = [];
 
     var f1 = function(browser,view){
-        return exec('gulp cucumberWithReport --browser='+browser+' --view='+view)
+        return exec('gulp cucumber --browser='+browser+' --view='+view)
             .then(function (results) {
                 console.log(results.stdout);
             })
@@ -122,15 +125,19 @@ gulp.task('reportHtml', function () {
     reporter.generate(options);
 });
 
-gulp.task('cucumberWithReport', ['cucumber'], function () {
+gulp.task('resultReportHtml', function () {
     var options = {
         theme: 'bootstrap',
-        jsonFile: 'test/reports/json/json-'+name+'.json',
-        output: 'test/reports/html/html-'+name+'.html',
+        jsonFile: 'test/reports/json/result-json-cucumber-report.json',
+        output: 'test/reports/html/result-html-cucumber-report.html',
         reportSuiteAsScenarios: true,
         launchReport: false
     };
     return reporter.generate(options);
+});
+
+gulp.task('glueJsons', function(){
+    return helper.glueJsonReports(process.cwd()+'\\test\\reports\\json\\*.json');
 });
 
 gulp.task('serverStop', function(){
