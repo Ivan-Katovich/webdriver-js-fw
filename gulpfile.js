@@ -5,11 +5,13 @@ require('phantomjs');
 
 var gulp = require('gulp'),
     runSequence = require('run-sequence'),
+    Proxy = require('browsermob-proxy').Proxy,
     cucumber = require('gulp-cucumber'),
     selenium = require('selenium-standalone'),
     SeleniumServer = require('selenium-webdriver/remote').SeleniumServer,
     reporter = require('cucumber-html-reporter'),
     fsp = require('fs-promise'),
+    fs = require('fs'),
     q = require('q'),
     util = require('gulp-util'),
     chai = require('chai'),
@@ -26,20 +28,25 @@ var exec = require('child-process-promise').exec;
 
 
 gulp.task('test', function(){
-    runSequence('server',
+    runSequence(
+        'server',
+        'proxy',
         'onPrepare',
         'cucumber',
         'reportHtml',
-        'serverStop');
+        'serverStop'
+    );
 });
 
 gulp.task('parallel', function(){
-    runSequence('server',
+    runSequence(
+        'server',
         'onPrepare',
         'cmd',
         'glueJsons',
         'resultReportHtml',
-        'serverStop');
+        'serverStop'
+    );
 });
 
 gulp.task('cmd', function(){
@@ -87,6 +94,31 @@ gulp.task('server', function(){
     var pathToSeleniumJar = require('path').join(__dirname, 'selenium-server', 'selenium-server-standalone-3.0.0-beta2.jar');
     server = new SeleniumServer(pathToSeleniumJar, {port: 4444});
     return server.start();
+});
+
+gulp.task('proxy', function(callback){
+    var proxy = new Proxy({ selHost: 'localhost', selPort: 4444, host: 'localhost', port: 4444 });
+    proxy.startHAR(4444,function(err){
+        if (err) {
+            console.error('doHAR ERROR: ' + err);
+            callback();
+        } else {
+            console.log('+++++++++++++++++++++++++++++++');
+            // fs.writeFileSync('travelsupermarket.har', data, 'utf8');
+            callback();
+        }
+
+    });
+    // proxy.doHAR('https://www.travelsupermarket.com/', function(err, data) {
+    //     if (err) {
+    //         console.error('doHAR ERROR: ' + err);
+    //         callback();
+    //     } else {
+    //         console.log('+++++++++++++++++++++++++++++++');
+    //         fs.writeFileSync('travelsupermarket.har', data, 'utf8');
+    //         callback();
+    //     }
+    // });
 });
 
 gulp.task('onPrepare', function(){
