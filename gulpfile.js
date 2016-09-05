@@ -2,10 +2,12 @@
 require('chromedriver');
 require('geckodriver'); //have to extract geckodriver.exe from zip file manually (node-geckodriver issue)
 require('phantomjs');
+require('browsermob-proxy');
 
 var gulp = require('gulp'),
     runSequence = require('run-sequence'),
     Proxy = require('browsermob-proxy').Proxy,
+    jsonFormatter = require('format-json'),
     cucumber = require('gulp-cucumber'),
     selenium = require('selenium-standalone'),
     SeleniumServer = require('selenium-webdriver/remote').SeleniumServer,
@@ -18,7 +20,8 @@ var gulp = require('gulp'),
     chaiAsPromised = require('chai-as-promised'),
     helper = require('./test/support/helper.js'),
     server,
-    name = '';
+    name = '',
+    proxy;
 
 chai.use(chaiAsPromised);
 
@@ -33,6 +36,7 @@ gulp.task('test', function(){
         'proxy',
         'onPrepare',
         'cucumber',
+        'stopProxy',
         'reportHtml',
         'serverStop'
     );
@@ -97,34 +101,61 @@ gulp.task('server', function(){
 });
 
 gulp.task('proxy', function(callback){
-    var proxy = new Proxy({ selHost: 'localhost', selPort: 4444, host: 'localhost', port: 4444 });
-    proxy.startHAR(4444,function(err){
-        if (err) {
-            console.error('doHAR ERROR: ' + err);
+    proxy = new Proxy({ /*selHost: 'localhost', selPort: 4444,*/ host: 'localhost', port: 8080 });
+    proxy.start(8081,function(err){
+        if(err){
+            console.log('proxy start ERROR: '+err);
             callback();
-        } else {
-            console.log('+++++++++++++++++++++++++++++++');
-            // fs.writeFileSync('travelsupermarket.har', data, 'utf8');
-            callback();
+        }else{
+            proxy.startHAR(8081,function(err){
+                if (err) {
+                    console.error('startHAR ERROR: ' + err);
+                    callback();
+                } else {
+                    callback();
+                }
+            });
         }
-
     });
-    // proxy.doHAR('https://www.travelsupermarket.com/', function(err, data) {
-    //     if (err) {
-    //         console.error('doHAR ERROR: ' + err);
-    //         callback();
-    //     } else {
-    //         console.log('+++++++++++++++++++++++++++++++');
-    //         fs.writeFileSync('travelsupermarket.har', data, 'utf8');
-    //         callback();
-    //     }
-    // });
+
+});
+
+gulp.task('stopProxy', function(callback){
+    proxy.getHAR(8081,function(err,data){
+        if(err){
+            console.log('getHAR ERROR: '+err);
+            callback();
+        }else{
+            var dataObj = JSON.parse(data);
+            var path = 'test/reports/har/';
+            var bmrName = 'proxy-id'+ Math.floor((Math.random() * 900) + 100) +'.json';
+            if (!fs.existsSync(path)) {
+                fs.mkdirSync(path);
+            }
+            console.log('Generate proxy report: '+path+bmrName);
+            fsp.writeJson(path+bmrName, dataObj)
+                .then(function () {
+                    return proxy.stop(8081,function(){
+                        callback();
+                    });
+                },function(err){
+                    callback(err);
+                });
+            // fs.writeFileSync(path+'proxy-id'+ Math.floor((Math.random() * 900) + 100) +'.har', data, 'utf8');
+            // proxy.stop(8081,function(){
+            //     callback();
+            // });
+        }
+    })
 });
 
 gulp.task('onPrepare', function(){
     return fsp.emptyDir('test/reports/json')
         .then(function () {
             return fsp.emptyDir('test/reports/html');
+        })
+        .then(function () {
+            return fsp.emptyDir('test/reports/har');
         });
 });
 
