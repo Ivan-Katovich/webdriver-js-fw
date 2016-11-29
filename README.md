@@ -14,7 +14,7 @@ Setup:
 
 ## Run tests:
 
-    gulp cucumber --argument=any_value
+    gulp test --argument=any_value
 
 Arguments:
 
@@ -22,6 +22,8 @@ Arguments:
     --view=(mobile or tabletP or tabletL or desktop)
 
 ## Run in parallel
+
+    gulp parallel --argument=any_value
 
 Arguments:
 
